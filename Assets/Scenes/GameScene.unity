@@ -137,7 +137,7 @@ GameObject:
   - component: {fileID: 172708758}
   - component: {fileID: 172708760}
   - component: {fileID: 172708759}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Tilemap
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1861,11 +1861,19 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2039504789600104023, guid: d6122bad580846f4da8a539d03c2c8be, type: 3}
       propertyPath: jumpForce
-      value: 500000
+      value: 200000
       objectReference: {fileID: 0}
     - target: {fileID: 2039504789600104023, guid: d6122bad580846f4da8a539d03c2c8be, type: 3}
       propertyPath: moveForce
-      value: 1000
+      value: 5000
+      objectReference: {fileID: 0}
+    - target: {fileID: 2039504789600104023, guid: d6122bad580846f4da8a539d03c2c8be, type: 3}
+      propertyPath: endLinecastRatio
+      value: 0.41
+      objectReference: {fileID: 0}
+    - target: {fileID: 2039504789600104023, guid: d6122bad580846f4da8a539d03c2c8be, type: 3}
+      propertyPath: stageLayer.m_Bits
+      value: 64
       objectReference: {fileID: 0}
     - target: {fileID: 6042544239021330674, guid: d6122bad580846f4da8a539d03c2c8be, type: 3}
       propertyPath: m_RootOrder
