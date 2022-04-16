@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Mirror;
 
-public class CameraManager : MonoBehaviour
+public class CameraManager : NetworkBehaviour
 {
     Camera mainCamera;
     [SerializeField] private GameObject targetCharacter; //カメラを追従させる対象
@@ -16,6 +17,7 @@ public class CameraManager : MonoBehaviour
 
     private void Update()
     {
+        if (isLocalPlayer)
         { // カメラをターゲットに追従させる
           // 元々のカメラ位置を取得
             Vector3 cameraPosition = mainCamera.transform.position;
