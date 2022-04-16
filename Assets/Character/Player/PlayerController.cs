@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Mirror;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : NetworkBehaviour
 {
     private enum MOVE_HORIZONTAL
     {
@@ -21,8 +22,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float moveAttenuationRatio = 0.9f;
 
     // ユーザ入力パラメータ
-    MOVE_HORIZONTAL moveHoraizon = MOVE_HORIZONTAL.STOP;
-    bool isJumped = false;
+    MOVE_HORIZONTAL m_moveHoraizon = MOVE_HORIZONTAL.STOP;
+    bool m_isJumped = false;
 
     // デバッグ用変数
     bool isDebugging = false;
@@ -38,19 +39,24 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (!isLocalPlayer)
+        {
+            return;
+        }
+
         // 入力をもらってリジッドに力を加える
         var horizonkey = Input.GetAxis("Horizontal");
         if(horizonkey == 0)
         {
-            moveHoraizon = MOVE_HORIZONTAL.STOP;
+            m_moveHoraizon = MOVE_HORIZONTAL.STOP;
         }
         else if (horizonkey > 0)
         {
-            moveHoraizon = MOVE_HORIZONTAL.RIGHT;
+            m_moveHoraizon = MOVE_HORIZONTAL.RIGHT;
         }
         else if (horizonkey < 0)
         {
-            moveHoraizon = MOVE_HORIZONTAL.LEFT;
+            m_moveHoraizon = MOVE_HORIZONTAL.LEFT;
         }
 
         // ジャンプ
@@ -59,7 +65,7 @@ public class PlayerController : MonoBehaviour
             // 地面と接触しているかどうかチェック
             if (GroundChk())
             {
-                isJumped = true;
+                m_isJumped = true;
 
             }
         }
@@ -78,19 +84,30 @@ public class PlayerController : MonoBehaviour
     // 物理法則に関連する処理はこっちで処理
     private void FixedUpdate()
     {
-        Move();
+        if (!isLocalPlayer)
+        {
+            return;
+        }
+
+        CmdMove(m_moveHoraizon, m_isJumped);
+        m_isJumped = false;
+    }
+
+    [Command]
+    void CmdMove(MOVE_HORIZONTAL moveHoraizon, bool isJumped)
+    {
+        Move(moveHoraizon);
 
         if (isJumped)
         {
-            isJumped = false;
             Jump();
         }
     }
 
-    void Move()
+
+    void Move(MOVE_HORIZONTAL moveHoraizon)
     {
         float speed = 0;
-        Vector3 scale = transform.localScale;
         switch (moveHoraizon)
         {
             case MOVE_HORIZONTAL.STOP:
@@ -107,7 +124,6 @@ public class PlayerController : MonoBehaviour
         }
 
         // 横方向に力を加える
-        transform.localScale = scale; // scaleを代入
         _rigidbody.AddForce(moveForce * speed * Vector2.right);
         // 横方向の速度を減衰させる
         _rigidbody.velocity = new Vector2(_rigidbody.velocity.x * moveAttenuationRatio, _rigidbody.velocity.y);
