@@ -16,14 +16,19 @@ public class PlayerController : NetworkBehaviour
     public float moveForce = 1;
     [Tooltip("ジャンプの強さ")]
     public float jumpForce = 1;
+    [Tooltip("発射の強さ")]
+    public float shootForce = 1;
     private Rigidbody2D _rigidbody;
     [SerializeField] LayerMask stageLayer;
     [SerializeField] float endLinecastRatio = 0.3f;
     [SerializeField] float moveAttenuationRatio = 0.9f;
+    [SerializeField] GameObject ballPrefab;
 
     // ユーザ入力パラメータ
     MOVE_HORIZONTAL m_moveHoraizon = MOVE_HORIZONTAL.STOP;
     bool m_isJumped = false;
+    bool m_isShoot = false;
+    Vector2 m_shootAngle = Vector2.zero;
 
     // デバッグ用変数
     bool isDebugging = false;
@@ -70,6 +75,14 @@ public class PlayerController : NetworkBehaviour
             }
         }
 
+        if (Input.GetButtonDown("Fire1"))
+        {
+            var to = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            var from = transform.position;
+            m_shootAngle = (to - from).normalized;
+            m_isShoot = true;
+        }
+
         // デバッグ用ボタン
         if (Input.GetKeyDown(KeyCode.G))
         {
@@ -89,18 +102,24 @@ public class PlayerController : NetworkBehaviour
             return;
         }
 
-        CmdMove(m_moveHoraizon, m_isJumped);
+        CmdMove(m_moveHoraizon, m_isJumped, m_isShoot, m_shootAngle);
         m_isJumped = false;
+        m_isShoot = false;
     }
 
     [Command]
-    void CmdMove(MOVE_HORIZONTAL moveHoraizon, bool isJumped)
+    void CmdMove(MOVE_HORIZONTAL moveHoraizon, bool isJumped, bool isShoot, Vector2 shootAngle)
     {
         Move(moveHoraizon);
 
         if (isJumped)
         {
             Jump();
+        }
+
+        if (isShoot)
+        {
+            Shoot(shootAngle);
         }
     }
 
@@ -137,6 +156,14 @@ public class PlayerController : NetworkBehaviour
     void Jump()
     {
         _rigidbody.AddForce(jumpForce * Vector2.up);
+    }
+
+    void Shoot(Vector2 angle)
+    {
+        var ball = Instantiate(ballPrefab);
+        ball.transform.position = transform.position;
+        ball.GetComponent<Rigidbody2D>().AddForce(shootForce * angle);
+        NetworkServer.Spawn(ball);
     }
 
     // キャラクターがステージと接触しているかどうかを判定する
